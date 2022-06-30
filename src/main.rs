@@ -53,7 +53,7 @@ async fn main() {
         .await
         .unwrap();
 
-    let mut hub = Sheets::new(
+    let hub = Sheets::new(
         Client::builder().build(HttpsConnectorBuilder::new()
             .with_native_roots()
             .https_or_http()
@@ -63,4 +63,13 @@ async fn main() {
         ),
         auth
     );
+
+    let (_, values) = hub
+        .spreadsheets()
+        .values_get(dotenv!("SPREADSHEET_ID"), args.app.as_str())
+        .doit()
+        .await
+        .unwrap();
+
+    let values = values.values.unwrap();
 }
