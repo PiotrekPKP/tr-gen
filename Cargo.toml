@@ -3,6 +3,14 @@ name = "tr-gen"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
+clap = { version = "3.2", features = ["derive"] }
+serde = "1.0"
+serde_json = "1.0"
+google-sheets4 = "*"
+tokio = { version = "1.18", features = ["full"] }
+dotenv = "0.15"
+dotenv_codegen = "0.15"
+dirs = "4.0"
+hyper-rustls = { version = "0.23", features = ["rustls-native-certs"] }
+hyper = "0.14"
