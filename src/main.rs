@@ -2,9 +2,10 @@
 extern crate dotenv_codegen;
 
 use std::any::{Any, TypeId};
-use std::borrow::BorrowMut;
 use std::collections::HashMap;
 use std::fs;
+use std::fs::File;
+use std::io::Write;
 use std::rc::Rc;
 use clap::Parser;
 use google_sheets4::oauth2::{ApplicationSecret, InstalledFlowAuthenticator, InstalledFlowReturnMethod};
@@ -105,7 +106,7 @@ async fn main() {
         .await
         .unwrap();
 
-    let values = values.values.unwrap();
+    let mut values = values.values.unwrap();
 
     let mut translations = HashMap::<String, HashMap<String, StringOrHashMap>>::new();
 
@@ -115,7 +116,11 @@ async fn main() {
         let mut language_hashmap: HashMap<String, StringOrHashMap> = HashMap::new();
         let mut single_keys = Vec::<String>::new();
 
-        values[1..].iter().for_each(|strings| {
+        values[1..].iter_mut().for_each(|strings| {
+            if strings.len() < languages.len() + 1 {
+                strings.push("".into());
+            }
+
             let mut keys: Vec<String> = strings[0].split('.').map(|s| s.into()).collect();
             keys.reverse();
 
@@ -157,9 +162,12 @@ async fn main() {
         translations.insert(language.clone(), language_hashmap);
     });
 
-    let json = serde_json::to_string(&translations);
+    let json = serde_json::to_string_pretty(&translations).unwrap();
 
-    println!("{}", json.unwrap());
+    let mut file = File::create(&args.output).unwrap();
+    file.write_all(json.as_bytes()).unwrap();
+
+    println!("Generated translation file ({}) for `{}`!", args.output, args.app);
 }
 
 fn clean_hashmap(keys: Vec<String>, hashmap: HashMap<String, StringOrHashMap>, depth: Option<usize>) -> HashMap<String, StringOrHashMap> {
@@ -177,7 +185,6 @@ fn clean_hashmap(keys: Vec<String>, hashmap: HashMap<String, StringOrHashMap>, d
     keys_for_depth.dedup();
 
     let mut hashmap = hashmap;
-    dbg!(depth.unwrap_or(0), &hashmap);
 
     hashmap.retain(|key, _| { keys_for_depth.contains(key) });
     hashmap = hashmap.iter().map(|(key, value)| {
