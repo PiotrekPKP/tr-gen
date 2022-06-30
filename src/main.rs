@@ -164,6 +164,7 @@ async fn main() {
 
     let json = serde_json::to_string_pretty(&translations).unwrap();
 
+    fs::create_dir_all(&args.output.rsplit_once('/').unwrap_or(("", &args.output)).0).unwrap();
     let mut file = File::create(&args.output).unwrap();
     file.write_all(json.as_bytes()).unwrap();
 
