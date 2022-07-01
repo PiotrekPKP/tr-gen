@@ -117,7 +117,7 @@ async fn main() {
         let mut single_keys = Vec::<String>::new();
 
         values[1..].iter_mut().for_each(|strings| {
-            if strings.len() < languages.len() + 1 {
+            while strings.len() < languages.len() + 1 {
                 strings.push("".into());
             }
 
