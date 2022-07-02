@@ -130,34 +130,16 @@ async fn main() {
                 return;
             }
 
-            language_hashmap.insert(keys[0].clone().to_string(), StringOrHashMap(Rc::new(strings[i + 1].clone())));
+            let mut new_map: HashMap<String, StringOrHashMap> = HashMap::new();
+            new_map.insert(keys[0].clone().to_string(), StringOrHashMap(Rc::new(strings[i + 1].clone())));
 
             keys[1..].iter().for_each(|key| {
-                let new_map = language_hashmap.clone();
-
-                let old_value = language_hashmap.get(key);
-                match old_value {
-                    Some(_) => {
-                        let new_hash_map = HashMap::from([(key.clone(), StringOrHashMap(Rc::new(new_map)))]);
-
-                        language_hashmap.extend(new_hash_map);
-                    },
-                    None => {
-                        language_hashmap.insert(key.clone(), StringOrHashMap(Rc::new(new_map)));
-                    }
-                }
+                new_map.insert(key.clone(), StringOrHashMap(Rc::new(new_map.clone())));
+                new_map.retain(|k, _| key == k);
             });
-        });
 
-        language_hashmap = clean_hashmap(
-            values
-                .iter()
-                .map(|v| v[0].clone())
-                .filter(|v| v != "Key")
-                .collect(),
-            language_hashmap.clone(),
-            None
-        );
+            language_hashmap = extended_string_or_hashmap(language_hashmap.clone(), new_map);
+        });
 
         translations.insert(language.clone(), language_hashmap);
     });
@@ -171,34 +153,41 @@ async fn main() {
     println!("Generated translation file ({}) for `{}`!", args.output, args.app);
 }
 
-fn clean_hashmap(keys: Vec<String>, hashmap: HashMap<String, StringOrHashMap>, depth: Option<usize>) -> HashMap<String, StringOrHashMap> {
-    let mut keys_for_depth = keys
-        .iter()
-        .map(|key| key.split('.').collect::<Vec<&str>>())
-        .collect::<Vec<Vec<&str>>>()
-        .iter()
-        .map(|key| key.get(depth.unwrap_or(0)))
-        .filter(|key| key.is_some())
-        .map(|key| key.unwrap().to_string())
+fn extended_string_or_hashmap(hashmap: HashMap<String, StringOrHashMap>, new_hashmap: HashMap<String, StringOrHashMap>) -> HashMap<String, StringOrHashMap> {
+    let mut extended = hashmap.clone();
+
+    let repeating_keys = hashmap.keys().map(|k| {
+        if new_hashmap.contains_key(k) {
+            Some(k.clone())
+        } else { None }
+    })
+        .filter(|k| k.is_some())
+        .map(|k| k.unwrap())
         .collect::<Vec<String>>();
 
-    keys_for_depth.sort();
-    keys_for_depth.dedup();
+    new_hashmap.keys().filter(|key| !hashmap.contains_key(key.clone())).for_each(|key| {
+        extended.insert(key.clone(), new_hashmap.get(key).unwrap().clone());
+    });
 
-    let mut hashmap = hashmap;
+    repeating_keys.iter().for_each(|key| {
+        let first_node = hashmap.get(key).unwrap().0.downcast_ref::<HashMap<String, StringOrHashMap>>();
+        let second_node = new_hashmap.get(key).unwrap().0.downcast_ref::<HashMap<String, StringOrHashMap>>();
 
-    hashmap.retain(|key, _| { keys_for_depth.contains(key) });
-    hashmap = hashmap.iter().map(|(key, value)| {
-        let hashmap_downcast = value.0.downcast_ref::<HashMap<String, StringOrHashMap>>();
-
-        if hashmap_downcast.is_some() {
-            let cleaned_inner = clean_hashmap(keys.clone(), hashmap_downcast.unwrap().clone(), Some(depth.unwrap_or(0) + 1));
-            (key.clone(), StringOrHashMap(Rc::new(cleaned_inner)))
+        match (first_node, second_node) {
+            (Some(f_node), Some(s_node)) => {
+                extended.insert(key.clone(), StringOrHashMap(Rc::new(extended_string_or_hashmap(f_node.clone(), s_node.clone()))));
+            }
+            (Some(node), None) => {
+                extended.insert(key.clone(), StringOrHashMap(Rc::new(node.clone())));
+            }
+            (None, Some(node)) => {
+                extended.insert(key.clone(), StringOrHashMap(Rc::new(node.clone())));
+            }
+            (None, None) => {
+                extended.insert(key.clone(), StringOrHashMap(Rc::new(hashmap.get(key).unwrap().0.downcast_ref::<String>().unwrap().clone())));
+            }
         }
-        else {
-            (key.clone(), value.clone())
-        }
-    }).collect();
+    });
 
-    hashmap
+    extended
 }
