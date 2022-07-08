@@ -114,7 +114,6 @@ async fn main() {
 
     languages.iter().enumerate().for_each(|(i, language)| {
         let mut language_hashmap: HashMap<String, StringOrHashMap> = HashMap::new();
-        let mut single_keys = Vec::<String>::new();
 
         values[1..].iter_mut().for_each(|strings| {
             while strings.len() < languages.len() + 1 {
@@ -125,7 +124,6 @@ async fn main() {
             keys.reverse();
 
             if keys.len() == 1 {
-                single_keys.push(keys[0].to_string());
                 language_hashmap.insert(strings[0].clone(), StringOrHashMap(Rc::new(strings[i + 1].clone())));
                 return;
             }
