@@ -17,7 +17,7 @@ https://user-images.githubusercontent.com/53144702/184351550-c82dc02c-204d-4736-
 - https://console.cloud.google.com/apis/credentials
 - Prepare OAuth consent screen:
 - https://console.cloud.google.com/apis/credentials/consent
-- Update the following lines to your `.env` file:
+- Update the following lines in your `.env` file:
 ```
 SPREADSHEET_ID=<your spreadsheet's ID>
 CLIENT_ID=<your client id>
