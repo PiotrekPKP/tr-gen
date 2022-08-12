@@ -1,4 +1,4 @@
-# Dinnery `tr-gen`
+# `tr-gen`
 
 ### Overview
 This app alows you to generate json file with translations based on your Google Spreadheet!
