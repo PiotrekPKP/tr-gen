@@ -1,5 +1,15 @@
 # Dinnery `tr-gen`
 
+### Overview
+This app alows you to generate json file with translations based on your Google Spreadheet!
+
+#### Video
+
+https://user-images.githubusercontent.com/53144702/184351550-c82dc02c-204d-4736-85a1-4daed7353bfc.mp4
+
+
+
+
 ### Building
 #### Prepare your `.env` file:
 - Get spreadsheet's ID - that's the file you want to run the script on
