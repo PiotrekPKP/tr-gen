@@ -14,6 +14,7 @@ CLIENT_ID=<your client id>
 CLIENT_SECRET=<your client secret>
 ```
 Remember to add `spreadsheets.readonly` scope to your OAuth consent screen.
+Also, remember to add your Google Account with the spritesheet to test account in the OAuth consent screen section.
 
 #### Build project
 `cargo build --release`

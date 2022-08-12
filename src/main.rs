@@ -76,8 +76,8 @@ async fn main() {
     let data_dir = dirs::data_local_dir().unwrap();
     let data_dir = data_dir.to_str().unwrap();
 
-    fs::create_dir_all(format!("{}{}", data_dir, "/dinnery")).unwrap();
-    let cache_path = format!("{}{}", data_dir, "/dinnery/tr-gen.cache");
+    fs::create_dir_all(format!("{}{}", data_dir, "/tr-gen")).unwrap();
+    let cache_path = format!("{}{}", data_dir, "/tr-gen/tr-gen.cache");
 
     let auth = InstalledFlowAuthenticator::builder(
         secret,
